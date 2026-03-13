@@ -87,6 +87,24 @@ const installProcessWarningFilter = async () => {
 
 await installProcessWarningFilter();
 
+// Set up global proxy dispatcher from environment variable
+const setupGlobalProxy = async () => {
+  const proxyUrl =
+    process.env.OPENCLAW_GLOBAL_PROXY || process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+  if (!proxyUrl) {
+    return;
+  }
+  try {
+    const { ProxyAgent, setGlobalDispatcher } = await import("undici");
+    setGlobalDispatcher(new ProxyAgent(proxyUrl));
+    console.log(`[openclaw] global proxy enabled: ${proxyUrl}`);
+  } catch (err) {
+    console.error(`[openclaw] warning: failed to set global proxy: ${err.message}`);
+  }
+};
+
+await setupGlobalProxy();
+
 const tryImport = async (specifier) => {
   try {
     await import(specifier);
